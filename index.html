@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal Search Engine</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery.terminal/css/jquery.terminal.min.css"/>
+    <style>
+        body {
+            background-color: #11111b;
+            color: #cdd6f4;
+            font-family: 'Courier New', Courier, monospace;
+            height: 100vh;
+            margin: 0;
+        }
+        .terminal {
+            height: 100%;
+            overflow: auto;
+            padding: 10px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal" id="terminal"></div>
+    <script src="https://cdn.jsdelivr.net/npm/jquery"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery.terminal/js/jquery.terminal.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            const SERPER_API_KEY = 'b9e768091bfcc5c660fc37620793e4aed30629fe';
+            function truncateText(text, maxLength = 200) {
+                if (!text) return 'No description available.';
+                return text.length > maxLength 
+                    ? text.substring(0, maxLength) + '...' 
+                    : text;
+            }
+
+            $('#terminal').terminal({
+                help: function() {
+                    this.echo("Available Commands:");
+                    this.echo("1. search [query] - Search the web");
+                    this.echo("2. clear - Clear terminal screen");
+                    this.echo("3. help - Show this help menu");
+                },
+                search: function(query) {
+                   
+
+                    const terminal = this;
+                    terminal.echo(`Searching for: ${query}`);
+                    terminal.echo("Fetching results...\n");
+
+                    $.ajax({
+                        url: 'https://google.serper.dev/search',
+                        method: 'POST',
+                        headers: {
+                            'X-API-KEY': SERPER_API_KEY,
+                            'Content-Type': 'application/json'
+                        },
+                        data: JSON.stringify({
+                            q: query,
+                            num: 20  
+                        }),
+                        dataType: 'json',
+                        success: function(response) {
+                            if (response.organic && response.organic.length > 0) {
+                                terminal.echo('Search Results:\n');
+                                
+                                response.organic.forEach((result, index) => {
+                                    const formattedResult = 
+                                        `[[b;#89b4fa;]${index + 1}. ${result.title}]\n` +
+                                        `[[i;#a6e3a1;]${result.link}]\n` +
+                                        `${truncateText(result.snippet)}\n`;
+                                    
+                                    terminal.echo(formattedResult);
+                                });
+                                
+                            }
+                        },
+                       
+                    });
+                },
+                clear: function() {
+                    this.clear();
+                }
+            }, {
+                greetings: [
+                    'Welcome to Terminal Search Engine!',
+                    'Type "help" to see available commands.',
+                    'Use "search [query]" to search the web.',
+					'For Multi word Search use ""',
+                ].join('\n'),
+                prompt: 'user > '
+            });
+        });
+    </script>
+</body>
+</html>
