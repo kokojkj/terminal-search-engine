@@ -14,3 +14,4 @@ commands and its usage
 2. clear - Clear terminal screen
 3. help - Show the help menu
 
+edit : api key is revoked now , you will need to use your own key
